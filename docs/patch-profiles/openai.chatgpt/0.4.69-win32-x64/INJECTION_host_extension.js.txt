@@ -1,0 +1,22 @@
+Host patch (injected into installed extension `out/extension.js`)
+
+Purpose:
+- Read VS Code settings and inject per-webview `<meta>` tags into the Codex webview HTML:
+  - `codex.workflow.collapseByDefault = "collapse" | "expand" | "disable"`
+  - `codex.workflow.threadScope = "workspace" | "all"`
+- Provide workspace context to the webview:
+  - Collect current `workspaceFolders[].uri.fsPath`
+  - Inject as `codex-workflow-workspace-roots` (URL-encoded JSON array)
+- Persist per-turn Workflow timers locally (host `globalState`) for keys prefixed with:
+  - `codex.workflow.timer.`
+
+Injected markers:
+- Host patch marker: `CODEX_WORKFLOW_FOLD_HOST_V8`
+- Meta tags injected into HTML `<head>`:
+  - `<meta name="codex-workflow-collapse" content="...">`
+  - `<meta name="codex-workflow-thread-scope" content="...">`
+  - `<meta name="codex-workflow-workspace-roots" content="...">`
+
+Implementation source of truth:
+- `tools/workflow-fold/patcher.mjs` (`patchExtensionHostJs`)
+

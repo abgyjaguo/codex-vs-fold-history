@@ -1,0 +1,16 @@
+Host patch (injected into installed extension `out/extension.js`)
+
+Purpose:
+- Read VS Code settings (no `.codex/config.toml`) and extract:
+  - `codex.workflow.collapseByDefault = "collapse" | "expand" | "disable"`
+  - If missing/invalid, default to `"collapse"`
+- Inject the value into the webview HTML as:
+  `<meta name="codex-workflow-collapse" content="...">`
+
+Injected snippet (minified style, inserted inside `getWebviewContentProduction` before `return l`):
+
+/* CODEX_WORKFLOW_FOLD_HOST_V6 */let wf="collapse";try{let vs=require("vscode"),v=vs?.workspace?.getConfiguration?.()?.get?.("codex.workflow.collapseByDefault");(v==="collapse"||v==="expand"||v==="disable")&&(wf=v)}catch{}try{if(typeof l==="string"&&!l.includes("codex-workflow-collapse")){let meta="<meta name=\\"codex-workflow-collapse\\" content=\\""+wf+"\\">\\n",l2=l.replace("</head>",meta+"</head>");l2===l&&(l2=l.replace("<head>","<head>"+meta),l2===l&&(l2=l.replace(/<head[^>]*>/,m=>m+meta))),l=l2}}catch{};
+
+Verification marker:
+- The patched file must contain the string: `codex-workflow-collapse`
+- The patched file should contain the string: `CODEX_WORKFLOW_FOLD_HOST_V6`
