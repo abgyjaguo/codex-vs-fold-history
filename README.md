@@ -1,6 +1,6 @@
 # codex-vs-fold-history
 
-Chinese README: `README-zh.md`
+中文说明：[`README-zh.md`](./README-zh.md)
 
 Patch the installed OpenAI Codex VS Code extension (`openai.chatgpt`) to:
 

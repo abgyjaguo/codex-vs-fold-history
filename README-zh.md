@@ -1,6 +1,6 @@
 # codex-vs-fold-history
 
-English README：`README.md`
+英文版：[`README.md`](./README.md)
 
 给已安装的 OpenAI Codex VS Code 扩展（`openai.chatgpt`）打补丁，实现：
 
