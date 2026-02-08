@@ -70,7 +70,7 @@ Do not clone. Use the remote scripts only:
 - Patched host file must include: `codex-workflow-collapse`
 - Patched host file must include: `codex-workflow-workspace-roots`
 - Patched webview file must include: `CODEX_WORKFLOW_FOLD_PATCH`
-- Patched webview file should include: `CODEX_WORKFLOW_FOLD_PATCH_V19` (project-scoped threads + latest patch set)
+- Patched webview file should include: `CODEX_WORKFLOW_FOLD_PATCH_V20` (project-scoped threads + latest patch set)
 - Patched `zh-CN` locale file (if present) must include: `codex.workflow.label`
 
 ## Version mismatch strategy (required AI behavior)
@@ -87,4 +87,3 @@ If the installed `openai.chatgpt` version is not exactly what this repo was test
 2. Decide:
    - If the same patch logic can be applied safely (anchors found; verification markers appear after patch), proceed.
    - If patch logic cannot be reused (anchors missing / structure materially different), STOP and explain what differs and what would be required (e.g. pin extension version or create a new patch profile).
-

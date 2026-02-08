@@ -10,7 +10,7 @@ Purpose:
   - Set `codex.workflow.threadScope = "all"` to disable filtering.
 
 Verification marker:
-- The patched file must contain the string: `CODEX_WORKFLOW_FOLD_PATCH_V19`
+- The patched file must contain the string: `CODEX_WORKFLOW_FOLD_PATCH_V20`
 
 Notes:
 - Some older threads may store `cwd` as a `file://` URI (e.g. `file:///d%3A/...`).
@@ -18,4 +18,3 @@ Notes:
 
 Implementation source of truth:
 - `tools/workflow-fold/patcher.mjs` (search for `CODEX_WORKFLOW_FOLD_PATCH`)
-

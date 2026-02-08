@@ -31,6 +31,7 @@ test("patchWebviewBundleJs injects workflow fold patch marker", () => {
   assert.match(out, /CODEX_WORKFLOW_FOLD_PATCH_V3/);
   assert.match(out, /CODEX_WORKFLOW_FOLD_PATCH_V4/);
   assert.match(out, /CODEX_WORKFLOW_FOLD_PATCH_V19/);
+  assert.match(out, /CODEX_WORKFLOW_FOLD_PATCH_V20/);
   assert.match(out, /codex-workflow-workspace-roots/);
   assert.match(out, /AppServerManager/);
   assert.match(out, /\bNtt\b/);
@@ -46,6 +47,8 @@ test("patchWebviewBundleJs injects workflow fold patch marker", () => {
   assert.match(out, /useSharedObject/);
   assert.match(out, /conversationId/);
   assert.match(out, /const footer=expanded/);
+  assert.match(out, /const footer=!collapsed/);
+  assert.match(out, /children:\[p\.jsx\("button".*body,footer\]\}/);
   assert.match(out, /border-t/);
 });
 

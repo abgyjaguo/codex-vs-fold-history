@@ -171,7 +171,7 @@ function patchExtensionHostJs(source) {
 }
 
 function patchWebviewBundleJs(source) {
-  if (source.includes("CODEX_WORKFLOW_FOLD_PATCH_V19")) return source;
+  if (source.includes("CODEX_WORKFLOW_FOLD_PATCH_V20")) return source;
 
   const exportIdx = source.lastIndexOf("export{");
   if (exportIdx === -1) {
@@ -194,6 +194,7 @@ function patchWebviewBundleJs(source) {
 	/* CODEX_WORKFLOW_FOLD_PATCH_V16 */
 	/* CODEX_WORKFLOW_FOLD_PATCH_V18 */
 	/* CODEX_WORKFLOW_FOLD_PATCH_V19 */
+	/* CODEX_WORKFLOW_FOLD_PATCH_V20 */
 	function __codexWorkflowCollapseMode(){const m=globalThis.document?.querySelector('meta[name="codex-workflow-collapse"]');const v=m?.getAttribute("content")?.trim();return v==="collapse"||v==="expand"||v==="disable"?v:"collapse"}
 	function __codexWorkflowThreadScope(){const m=globalThis.document?.querySelector('meta[name="codex-workflow-thread-scope"]');const v=m?.getAttribute("content")?.trim();return v==="workspace"||v==="all"?v:"workspace"}
 	function __codexWorkflowWorkspaceRoots(){const m=globalThis.document?.querySelector('meta[name="codex-workflow-workspace-roots"]');const v=m?.getAttribute("content")?.trim();if(!v)return null;try{const a=JSON.parse(decodeURIComponent(v));return Array.isArray(a)?a:null}catch{return null}}
@@ -252,7 +253,8 @@ if(__codexOrigLocalConversationItemContent){try{LocalConversationItemContent=fun
 				const chevron=p.jsx("span",{className:__clsx("icon-xs transition-transform",collapsed?"rotate-0":"rotate-90"),children:"›"});
 				const row=p.jsxs("div",{className:"flex w-full items-center justify-between gap-2",children:[title,chevron]});
 				const body=!collapsed?p.jsx("div",{className:"border-token-border/80 border-t flex flex-col gap-1 px-3 py-2",style:{backgroundColor:"#212121"},children:p.jsx(__origR2n,{...props})}):null;
-				return p.jsxs("div",{className:"border-token-border/80 border overflow-hidden",style:{borderRadius:"16px",marginTop:"2px",marginBottom:"6px"},children:[p.jsx("button",{type:"button",className:"w-full px-3 py-2 text-left",style:{backgroundColor:"#212121"},onClick:()=>setCollapsed(v=>!v),children:row}),body]});
+				const footer=!collapsed?p.jsx("button",{type:"button",className:"w-full px-3 py-2 text-left border-token-border/80 border-t",style:{backgroundColor:"#212121"},onClick:()=>setCollapsed(v=>!v),children:row}):null;
+				return p.jsxs("div",{className:"border-token-border/80 border overflow-hidden",style:{borderRadius:"16px",marginTop:"2px",marginBottom:"6px"},children:[p.jsx("button",{type:"button",className:"w-full px-3 py-2 text-left",style:{backgroundColor:"#212121"},onClick:()=>setCollapsed(v=>!v),children:row}),body,footer]});
 			}
 			const __wrap=function(props){return p.jsx(__CodexWorkflowAgentBodyInner,{...props})};
 			__wrap.__codexWorkflowFoldR2nInstalled=!0;
@@ -364,7 +366,7 @@ async function main() {
   results.push({
     file: webviewJs,
     ...(await patchFile(webviewJs, patchWebviewBundleJs)),
-    verifyIncludes: "CODEX_WORKFLOW_FOLD_PATCH_V19",
+    verifyIncludes: "CODEX_WORKFLOW_FOLD_PATCH_V20",
   });
   if (zhCnJs) {
     results.push({
