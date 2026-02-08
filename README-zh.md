@@ -49,6 +49,21 @@ node "${TMPDIR:-/tmp}/codex-folding-install.mjs"
 
 ---
 
+## 其他电脑如何更新
+
+这个功能是**按机器生效**的（会修改每台电脑本机已安装的扩展产物文件）。
+
+如果你要在另一台电脑更新/启用：
+
+1) 在那台电脑安装 VS Code、`openai.chatgpt`、Node.js。
+2) 运行本仓库相同的安装命令或远程安装脚本。
+3) 重启 VS Code。
+4) 建议保持 `codex.workflow.threadScope = "workspace"`（如需看全部历史可设为 `"all"`）。
+
+后续如果那台电脑上的 `openai.chatgpt` 再次升级，重新执行一次安装脚本即可。
+
+---
+
 ## 配置（VS Code 设置）
 
 在 VS Code 设置里配置：

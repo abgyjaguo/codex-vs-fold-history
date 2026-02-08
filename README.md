@@ -49,6 +49,21 @@ Then **restart VS Code**.
 
 ---
 
+## Update on another computer
+
+This feature is **machine-local** (it patches installed extension files on each device).
+
+To update or enable it on another computer:
+
+1) Install VS Code, `openai.chatgpt`, and Node.js on that computer.
+2) Run the same install command/script from this repo.
+3) Restart VS Code.
+4) Keep `codex.workflow.threadScope` as `"workspace"` (or set `"all"` if you want all threads).
+
+If `openai.chatgpt` updates later on that computer, run the installer again.
+
+---
+
 ## Settings
 
 Configure via **VS Code Settings**:
