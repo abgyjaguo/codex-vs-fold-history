@@ -170,13 +170,169 @@ function patchExtensionHostJs(source) {
   return source.slice(0, returnIdx) + inject + source.slice(returnIdx);
 }
 
+function isIdentifierName(name) {
+  return /^[A-Za-z_$][\w$]*$/.test(name);
+}
+
+function uniqueNames(names) {
+  const seen = new Set();
+  const out = [];
+  for (const name of names) {
+    if (!isIdentifierName(name) || seen.has(name)) continue;
+    seen.add(name);
+    out.push(name);
+  }
+  return out;
+}
+
+function nearestMatchBefore(source, idx, regex) {
+  if (idx <= 0) return null;
+  const head = source.slice(0, idx);
+  let hit = null;
+  let m;
+  while ((m = regex.exec(head)) !== null) {
+    hit = m;
+  }
+  return hit;
+}
+
+function detectWebviewCompatSymbols(source) {
+  const mapFnCandidates = [];
+  const rendererFnCandidates = [];
+  const threadManagerCandidates = [];
+
+  const mapperAnchor = source.indexOf('type:"assistant-message",content:');
+  if (mapperAnchor !== -1) {
+    const hit = nearestMatchBefore(
+      source,
+      mapperAnchor,
+      /function\s+([A-Za-z_$][\w$]*)\s*\(/g
+    );
+    if (hit?.[1]) mapFnCandidates.push(hit[1]);
+  }
+
+  const rendererAnchor = source.indexOf('switch(n.type){case"user-message":{');
+  if (rendererAnchor !== -1) {
+    const hit = nearestMatchBefore(
+      source,
+      rendererAnchor,
+      /function\s+([A-Za-z_$][\w$]*)\s*\(/g
+    );
+    if (hit?.[1]) rendererFnCandidates.push(hit[1]);
+  }
+
+  const threadListAnchor = source.indexOf('sendRequest("thread/list"');
+  if (threadListAnchor !== -1) {
+    const hit = nearestMatchBefore(
+      source,
+      threadListAnchor,
+      /class\s+([A-Za-z_$][\w$]*)\s*\{/g
+    );
+    if (hit?.[1]) threadManagerCandidates.push(hit[1]);
+  }
+
+  return {
+    mapFns: uniqueNames(mapFnCandidates),
+    rendererFns: uniqueNames(rendererFnCandidates),
+    threadManagers: uniqueNames(threadManagerCandidates),
+  };
+}
+
+function buildCompatPatchSnippet(source) {
+  const detected = detectWebviewCompatSymbols(source);
+
+  const extraMapFns = detected.mapFns.filter(
+    (name) => name !== "mapStateToLocalConversationItems"
+  );
+  const extraRendererFns = detected.rendererFns.filter(
+    (name) => name !== "LocalConversationItemContent"
+  );
+  const extraThreadManagers = detected.threadManagers.filter(
+    (name) => name !== "AppServerManager" && name !== "Ntt"
+  );
+
+  const mapInstall = extraMapFns
+    .map(
+      (name, idx) =>
+        `
+try{
+  const __codexCompatMap_${idx}=typeof ${name}==="function"?${name}:null;
+  if(__codexCompatMap_${idx}&&!__codexCompatMap_${idx}.__codexWorkflowFoldInstalled){
+    const __wrap=function(rt,Ye){const res=__codexCompatMap_${idx}(rt,Ye);const mode=__codexWorkflowCollapseMode();if(mode==="disable")return res;const st=Array.isArray(res)?rt?.status:(res?.status??rt?.status);const turnIsRunning=__codexWorkflowStatusIsRunning(st);try{if(Array.isArray(res))return __codexWorkflowFoldItems(res,mode,turnIsRunning);if(res&&Array.isArray(res.items))return{...res,items:__codexWorkflowFoldItems(res.items,mode,turnIsRunning)};if(res&&Array.isArray(res.localConversationItems))return{...res,localConversationItems:__codexWorkflowFoldItems(res.localConversationItems,mode,turnIsRunning)};if(res&&Array.isArray(res.conversationItems))return{...res,conversationItems:__codexWorkflowFoldItems(res.conversationItems,mode,turnIsRunning)};return res}catch(e){try{console.error("Codex Workflow fold failed (compat mapState):",e)}catch{}return res}};
+    __wrap.__codexWorkflowFoldInstalled=!0;
+    __codexCompatMap_${idx}.__codexWorkflowFoldInstalled=!0;
+    ${name}=__wrap;
+  }
+}catch(e){try{console.error("Codex Workflow fold failed (compat mapState install):",e)}catch{}}
+`
+    )
+    .join("");
+
+  const threadFilterInstall = extraThreadManagers
+    .map(
+      (name) =>
+        `try{typeof ${name}!=="undefined"&&${name}?.prototype&&__codexWorkflowInstallThreadFilter(${name}.prototype)}catch{}`
+    )
+    .join("\n");
+
+  const rendererInstall = extraRendererFns
+    .map(
+      (name, idx) =>
+        `
+try{
+  const __codexCompatRenderer_${idx}=typeof ${name}==="function"?${name}:null;
+  if(__codexCompatRenderer_${idx}&&!__codexCompatRenderer_${idx}.__codexWorkflowFoldInstalled){
+    const __wrap=function(rt){
+      if(rt?.item?.type==="workflow"){
+        const __jsx=typeof jsxRuntimeExports!=="undefined"&&jsxRuntimeExports&&typeof jsxRuntimeExports.jsx==="function"&&typeof jsxRuntimeExports.jsxs==="function"?jsxRuntimeExports:typeof p!=="undefined"&&p&&typeof p.jsx==="function"&&typeof p.jsxs==="function"?p:null;
+        if(!__jsx)return __codexCompatRenderer_${idx}(rt);
+        try{
+          const it=rt?.item;
+          const mode=__codexWorkflowCollapseMode();
+          const collapsed=it?.defaultCollapsed===!0||mode==="collapse";
+          let running=!1;
+          try{for(const ch of it?.children??[]){if(ch?.completed===!1){running=!0;break}}}catch{}
+          const childNodes=(it?.children??[]).map((ch,n)=>__jsx.jsx(__codexCompatRenderer_${idx},{...rt,item:ch},ch?.callId??ch?.id??((it?.id??"workflow")+"-"+n)));
+          const title=(running?"RUN ":"DONE ")+"Workflow";
+          return __jsx.jsxs("details",{open:!collapsed,className:"border-token-border/80 border overflow-hidden",style:{borderRadius:"16px",marginTop:"2px",marginBottom:"6px"},children:[__jsx.jsx("summary",{className:"cursor-pointer list-none px-3 py-2",style:{backgroundColor:"#212121"},children:title}),__jsx.jsx("div",{className:"border-token-border/80 border-t flex flex-col gap-1 px-3 py-2",style:{backgroundColor:"#212121"},children:childNodes})]});
+        }catch(e){
+          try{console.error("Codex Workflow fold failed (compat render):",e)}catch{}
+          const it=rt?.item;
+          return __jsx.jsx("div",{className:"border-token-border/80 border bg-token-input-background/70 flex flex-col gap-2 px-3 py-2",children:(it?.children??[]).map((ch,n)=>__jsx.jsx(__codexCompatRenderer_${idx},{...rt,item:ch},ch?.callId??ch?.id??((it?.id??"workflow")+"-"+n)))});
+        }
+      }
+      return __codexCompatRenderer_${idx}(rt);
+    };
+    __wrap.__codexWorkflowFoldInstalled=!0;
+    __codexCompatRenderer_${idx}.__codexWorkflowFoldInstalled=!0;
+    ${name}=__wrap;
+  }
+}catch(e){try{console.error("Codex Workflow fold failed (compat render install):",e)}catch{}}
+`
+    )
+    .join("");
+
+  if (!mapInstall && !threadFilterInstall && !rendererInstall) {
+    return "";
+  }
+
+  return `
+/* CODEX_WORKFLOW_FOLD_PATCH_V21 */
+${mapInstall}
+${threadFilterInstall}
+${rendererInstall}
+`;
+}
+
 function patchWebviewBundleJs(source) {
-  if (source.includes("CODEX_WORKFLOW_FOLD_PATCH_V20")) return source;
+  if (source.includes("CODEX_WORKFLOW_FOLD_PATCH_V21")) return source;
 
   const exportIdx = source.lastIndexOf("export{");
   if (exportIdx === -1) {
     throw new Error('patchWebviewBundleJs: could not find trailing "export{"');
   }
+
+  const compatPatch = buildCompatPatchSnippet(source);
 
   const patch = `
 /* CODEX_WORKFLOW_FOLD_PATCH */
@@ -195,6 +351,7 @@ function patchWebviewBundleJs(source) {
 	/* CODEX_WORKFLOW_FOLD_PATCH_V18 */
 	/* CODEX_WORKFLOW_FOLD_PATCH_V19 */
 	/* CODEX_WORKFLOW_FOLD_PATCH_V20 */
+	/* CODEX_WORKFLOW_FOLD_PATCH_V21 */
 	function __codexWorkflowCollapseMode(){const m=globalThis.document?.querySelector('meta[name="codex-workflow-collapse"]');const v=m?.getAttribute("content")?.trim();return v==="collapse"||v==="expand"||v==="disable"?v:"collapse"}
 	function __codexWorkflowThreadScope(){const m=globalThis.document?.querySelector('meta[name="codex-workflow-thread-scope"]');const v=m?.getAttribute("content")?.trim();return v==="workspace"||v==="all"?v:"workspace"}
 	function __codexWorkflowWorkspaceRoots(){const m=globalThis.document?.querySelector('meta[name="codex-workflow-workspace-roots"]');const v=m?.getAttribute("content")?.trim();if(!v)return null;try{const a=JSON.parse(decodeURIComponent(v));return Array.isArray(a)?a:null}catch{return null}}
@@ -264,6 +421,7 @@ if(__codexOrigLocalConversationItemContent){try{LocalConversationItemContent=fun
 	}catch(e){
 		try{console.error("Codex Workflow fold failed (R2n install):",e)}catch{}
 	}
+${compatPatch}
 /* END CODEX_WORKFLOW_FOLD_PATCH */
 `;
 
@@ -366,7 +524,7 @@ async function main() {
   results.push({
     file: webviewJs,
     ...(await patchFile(webviewJs, patchWebviewBundleJs)),
-    verifyIncludes: "CODEX_WORKFLOW_FOLD_PATCH_V20",
+    verifyIncludes: "CODEX_WORKFLOW_FOLD_PATCH_V21",
   });
   if (zhCnJs) {
     results.push({

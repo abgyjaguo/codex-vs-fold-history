@@ -1,0 +1,47 @@
+{
+  "extension": {
+    "publisher": "OpenAI",
+    "id": "openai.chatgpt",
+    "folderName": "openai.chatgpt-0.5.73-win32-x64",
+    "testedOn": {
+      "os": "Windows",
+      "codexCli": "0.93.0"
+    }
+  },
+  "targets": [
+    {
+      "kind": "host",
+      "relativePath": "out/extension.js",
+      "backupSuffix": ".bak",
+      "verifyIncludes": ["codex-workflow-collapse", "codex-workflow-workspace-roots"]
+    },
+    {
+      "kind": "webview",
+      "relativePath": "webview/assets/index-*.js",
+      "backupSuffix": ".bak",
+      "verifyIncludes": ["CODEX_WORKFLOW_FOLD_PATCH_V21"]
+    },
+    {
+      "kind": "i18n",
+      "relativePath": "webview/assets/zh-CN-*.js",
+      "backupSuffix": ".bak",
+      "verifyIncludes": ["codex.workflow.label"]
+    }
+  ],
+  "settings": {
+    "location": "VS Code user settings (settings.json / JSONC)",
+    "keys": [
+      {
+        "key": "codex.workflow.collapseByDefault",
+        "values": ["collapse", "expand", "disable"],
+        "default": "collapse"
+      },
+      {
+        "key": "codex.workflow.threadScope",
+        "values": ["workspace", "all"],
+        "default": "workspace"
+      }
+    ],
+    "restartRequired": true
+  }
+}

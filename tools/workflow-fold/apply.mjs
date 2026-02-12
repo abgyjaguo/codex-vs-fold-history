@@ -155,8 +155,11 @@ async function main() {
     if (!web.includes("CODEX_WORKFLOW_FOLD_PATCH_V10")) {
       throw new Error("Verify failed: webview patch marker not present (V10)");
     }
-    if (!web.includes("CODEX_WORKFLOW_FOLD_PATCH_V20")) {
-      throw new Error("Verify failed: webview patch marker not present (V20)");
+    if (
+      !web.includes("CODEX_WORKFLOW_FOLD_PATCH_V21") &&
+      !web.includes("CODEX_WORKFLOW_FOLD_PATCH_V20")
+    ) {
+      throw new Error("Verify failed: webview patch marker not present (V21/V20)");
     }
     if (zhCnJs) {
       const zh = await fs.readFile(zhCnJs, "utf8");

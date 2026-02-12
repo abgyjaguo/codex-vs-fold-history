@@ -1,0 +1,20 @@
+Webview patch (injected into installed webview bundle `webview/assets/index-*.js`)
+
+Purpose:
+- Fold per-turn process items into a single expandable `Workflow` row so the final answer stays clean.
+- Project-scoped thread list (new):
+  - When `codex.workflow.threadScope = "workspace"` (default),
+    filter `thread/list` results to only include threads whose `cwd` is inside the
+    current VS Code workspace roots injected by the host meta tag:
+    `codex-workflow-workspace-roots`
+  - Set `codex.workflow.threadScope = "all"` to disable filtering.
+
+Verification marker:
+- The patched file must contain the string: `CODEX_WORKFLOW_FOLD_PATCH_V20`
+
+Notes:
+- Some older threads may store `cwd` as a `file://` URI (e.g. `file:///d%3A/...`).
+  The patch normalizes URIs to paths before matching against workspace roots.
+
+Implementation source of truth:
+- `tools/workflow-fold/patcher.mjs` (search for `CODEX_WORKFLOW_FOLD_PATCH`)

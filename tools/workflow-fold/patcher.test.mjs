@@ -32,6 +32,7 @@ test("patchWebviewBundleJs injects workflow fold patch marker", () => {
   assert.match(out, /CODEX_WORKFLOW_FOLD_PATCH_V4/);
   assert.match(out, /CODEX_WORKFLOW_FOLD_PATCH_V19/);
   assert.match(out, /CODEX_WORKFLOW_FOLD_PATCH_V20/);
+  assert.match(out, /CODEX_WORKFLOW_FOLD_PATCH_V21/);
   assert.match(out, /codex-workflow-workspace-roots/);
   assert.match(out, /AppServerManager/);
   assert.match(out, /\bNtt\b/);
@@ -50,6 +51,16 @@ test("patchWebviewBundleJs injects workflow fold patch marker", () => {
   assert.match(out, /const footer=!collapsed/);
   assert.match(out, /children:\[p\.jsx\("button".*body,footer\]\}/);
   assert.match(out, /border-t/);
+});
+
+test("patchWebviewBundleJs injects compat hooks for 0.4.73-style symbols", () => {
+  const input =
+    'function oR(rt,Ye){const marker={type:"assistant-message",content:"ok"};return{items:rt.items,status:rt.status,marker}}function s7(n){switch(n.type){case"user-message":{return null}default:return null}}class znt{sendRequest(m,p,o){if(m==="thread/list")return null;if(m==="thread/read")return null;return null}refresh(){this.sendRequest("thread/list",{limit:1});this.sendRequest("thread/read",{threadId:"t1"})}}export{foo as bar};';
+  const out = patchWebviewBundleJs(input);
+  assert.match(out, /CODEX_WORKFLOW_FOLD_PATCH_V21/);
+  assert.match(out, /oR=__wrap/);
+  assert.match(out, /s7=__wrap/);
+  assert.match(out, /__codexWorkflowInstallThreadFilter\(znt\.prototype\)/);
 });
 
 test("webview patch folds items when mapState returns {items: []}", () => {

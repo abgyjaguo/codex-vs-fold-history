@@ -54,18 +54,28 @@ function checkAnchors({ hostJs, webviewJs, localeJs }) {
   }
 
   if (webviewJs != null) {
+    const hasLegacyFoldEntrypoint =
+      webviewJs.includes("function mapStateToLocalConversationItems") ||
+      webviewJs.includes("function R2n");
+    const hasV073FoldEntrypoint =
+      webviewJs.includes('type:"assistant-message",content:') &&
+      webviewJs.includes('switch(n.type){case"user-message":{');
+    const hasLegacyThreadSender =
+      webviewJs.includes("AppServerManager") || webviewJs.includes("class Ntt");
+    const hasV073ThreadSender =
+      webviewJs.includes('sendRequest("thread/list"') &&
+      webviewJs.includes('sendRequest("thread/read"');
+
     checks.push({
       file: "webview/assets/index-*.js",
       name: "webview:fold-entrypoint",
-      ok:
-        webviewJs.includes("function mapStateToLocalConversationItems") ||
-        webviewJs.includes("function R2n"),
+      ok: hasLegacyFoldEntrypoint || hasV073FoldEntrypoint,
       required: true,
     });
     checks.push({
       file: "webview/assets/index-*.js",
       name: "webview:thread-sender",
-      ok: webviewJs.includes("AppServerManager") || webviewJs.includes("class Ntt"),
+      ok: hasLegacyThreadSender || hasV073ThreadSender,
       required: true,
     });
     checks.push({
@@ -76,8 +86,10 @@ function checkAnchors({ hostJs, webviewJs, localeJs }) {
     });
     checks.push({
       file: "webview/assets/index-*.js",
-      name: "webview:workflow-fold-patch-v20",
-      ok: webviewJs.includes("CODEX_WORKFLOW_FOLD_PATCH_V20"),
+      name: "webview:workflow-fold-patch-v21",
+      ok:
+        webviewJs.includes("CODEX_WORKFLOW_FOLD_PATCH_V21") ||
+        webviewJs.includes("CODEX_WORKFLOW_FOLD_PATCH_V20"),
       required: false,
     });
   }

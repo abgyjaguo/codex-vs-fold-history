@@ -1,0 +1,12 @@
+Locale patch (injected into `webview/assets/zh-CN-*.js`)
+
+Adds a few i18n keys used by the Workflow header:
+
+- `codex.workflow.label`
+- `codex.workflow.status.working`
+- `codex.workflow.status.done`
+- `codex.workflow.headerSuffix`
+
+Verification marker:
+- The patched file must contain the string: `codex.workflow.label`
+
